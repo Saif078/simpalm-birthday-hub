@@ -23,11 +23,9 @@ function writeJSON(file, data) {
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, JSON.stringify(data, null, 2));
 }
-
 function getCSTDate() {
   return new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Chicago' }));
 }
-
 function isBirthdayToday(bday) {
   if (!bday) return false;
   const parts = bday.split('-');
@@ -36,7 +34,6 @@ function isBirthdayToday(bday) {
   const now = getCSTDate();
   return month === (now.getMonth() + 1) && day === now.getDate();
 }
-
 function daysUntil(bday) {
   if (!bday) return 999;
   const now = getCSTDate();
@@ -80,6 +77,7 @@ async function sendEmail(emp, message) {
   }
   try {
     const poster = readJSON(POSTER_FILE, { bg: '#0d2b5c', color: '#e8c96a' });
+    const toEmail = process.env.TEST_EMAIL || emp.email;
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -88,7 +86,7 @@ async function sendEmail(emp, message) {
       },
       body: JSON.stringify({
         from: 'Simpalm Staffing Services <onboarding@resend.dev>',
-        to: emp.email,
+        to: toEmail,
         subject: `Happy Birthday, ${emp.first}!`,
         html: `<div style="font-family:sans-serif;max-width:500px;margin:auto;background:#f8f9fc;padding:32px;border-radius:12px;">
           <div style="background:#0d2b5c;border-radius:10px;padding:18px 22px;margin-bottom:20px;">
@@ -107,7 +105,7 @@ async function sendEmail(emp, message) {
     });
     const data = await res.json();
     if (data.id) {
-      console.log(`[EMAIL] Sent successfully to ${emp.email} — ID: ${data.id}`);
+      console.log(`[EMAIL] Sent successfully to ${toEmail} — ID: ${data.id}`);
       return { ok: true };
     } else {
       console.error(`[EMAIL] Failed:`, JSON.stringify(data));
@@ -183,11 +181,13 @@ cron.schedule('0 15 * * *', async () => {
 });
 
 app.get('/health', (req, res) => res.send('OK'));
+
 app.get('/api/debug-time', (req, res) => {
   const utc = new Date();
   const cst = getCSTDate();
   res.json({ utc: utc.toString(), cst: cst.toString(), cstMonth: cst.getMonth()+1, cstDay: cst.getDate() });
 });
+
 app.get('/api/employees', (req, res) => res.json(readJSON(DATA_FILE, [])));
 
 app.get('/api/employees/:id', (req, res) => {
