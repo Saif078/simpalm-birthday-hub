@@ -249,6 +249,6 @@ app.get('/api/stats', (req, res) => {
     upcoming: employees.filter(e => !isBirthdayToday(e.bday)).sort((a, b) => daysUntil(a.bday) - daysUntil(b.bday)).slice(0, 10)
   });
 });
-
+app.get('/health', (req, res) => res.send('OK'));
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Birthday Hub running on http://localhost:${PORT}`));
