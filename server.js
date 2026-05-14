@@ -3,7 +3,6 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const cron = require('node-cron');
-const nodemailer = require('nodemailer');
 const multer = require('multer');
 const XLSX = require('xlsx');
 
@@ -63,41 +62,47 @@ function fallbackWish(emp) {
 }
 
 async function sendEmail(emp, message) {
-  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    console.log('[EMAIL] Skipped — SMTP_USER or SMTP_PASS not set');
-    return { ok: false, reason: 'SMTP not configured' };
+  if (!process.env.RESEND_API_KEY) {
+    console.log('[EMAIL] Skipped — RESEND_API_KEY not set');
+    return { ok: false, reason: 'Resend API key not configured' };
   }
   try {
-    const poster = readJSON(POSTER_FILE, { name: 'Navy Classic', bg: '#0d2b5c', color: '#e8c96a' });
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS.replace(/\s/g, '')
-      }
+    const poster = readJSON(POSTER_FILE, { bg: '#0d2b5c', color: '#e8c96a' });
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        from: 'Simpalm Staffing Services <onboarding@resend.dev>',
+        to: emp.email,
+        subject: `Happy Birthday, ${emp.first}!`,
+        html: `<div style="font-family:sans-serif;max-width:500px;margin:auto;background:#f8f9fc;padding:32px;border-radius:12px;">
+          <div style="background:#0d2b5c;border-radius:10px;padding:18px 22px;margin-bottom:20px;">
+            <div style="font-family:Georgia,serif;font-size:18px;color:#fff;">Simpalm Staffing Services</div>
+            <div style="font-size:10px;color:#e8c96a;letter-spacing:1.5px;margin-top:3px;">BIRTHDAY HUB</div>
+          </div>
+          <p style="font-size:15px;color:#0a1428;line-height:1.75;margin-bottom:24px;">${message.replace(/\n/g,'<br/>')}</p>
+          <div style="background:${poster.bg};border-radius:10px;padding:28px;text-align:center;">
+            <div style="font-size:26px;">🎂</div>
+            <div style="font-family:Georgia,serif;font-size:20px;color:${poster.color};margin-top:8px;">Happy Birthday, ${emp.first}!</div>
+            <div style="font-size:12px;color:${poster.color};opacity:0.7;margin-top:6px;">From the Simpalm Staffing Team</div>
+          </div>
+          <div style="margin-top:20px;font-size:11px;color:#6b7a99;text-align:center;">simpalmstaffing.com</div>
+        </div>`
+      })
     });
-    await transporter.sendMail({
-      from: `"Simpalm Staffing Services" <${process.env.SMTP_USER}>`,
-      to: emp.email,
-      subject: `Happy Birthday, ${emp.first}!`,
-      html: `<div style="font-family:sans-serif;max-width:500px;margin:auto;background:#f8f9fc;padding:32px;border-radius:12px;">
-        <div style="background:#0d2b5c;border-radius:10px;padding:18px 22px;margin-bottom:20px;">
-          <div style="font-family:Georgia,serif;font-size:18px;color:#fff;">Simpalm Staffing Services</div>
-          <div style="font-size:10px;color:#e8c96a;letter-spacing:1.5px;margin-top:3px;">BIRTHDAY HUB</div>
-        </div>
-        <p style="font-size:15px;color:#0a1428;line-height:1.75;margin-bottom:24px;">${message.replace(/\n/g,'<br/>')}</p>
-        <div style="background:${poster.bg};border-radius:10px;padding:28px;text-align:center;">
-          <div style="font-size:26px;">🎂</div>
-          <div style="font-family:Georgia,serif;font-size:20px;color:${poster.color};margin-top:8px;">Happy Birthday, ${emp.first}!</div>
-          <div style="font-size:12px;color:${poster.color};opacity:0.7;margin-top:6px;">From the Simpalm Staffing Team</div>
-        </div>
-        <div style="margin-top:20px;font-size:11px;color:#6b7a99;text-align:center;">simpalmstaffing.com</div>
-      </div>`
-    });
-    console.log(`[EMAIL] Sent to ${emp.email}`);
-    return { ok: true };
+    const data = await res.json();
+    if (data.id) {
+      console.log(`[EMAIL] Sent to ${emp.email} — ID: ${data.id}`);
+      return { ok: true };
+    } else {
+      console.error(`[EMAIL] Failed:`, JSON.stringify(data));
+      return { ok: false, reason: JSON.stringify(data) };
+    }
   } catch (e) {
-    console.error(`[EMAIL] Failed for ${emp.email}:`, e.message);
+    console.error(`[EMAIL] Error:`, e.message);
     return { ok: false, reason: e.message };
   }
 }
@@ -126,7 +131,7 @@ async function sendWhatsApp(emp, message) {
 async function sendBirthdayWish(emp) {
   console.log(`[WISH] Processing ${emp.first} ${emp.last}...`);
   const message = await generateWish(emp);
-  console.log(`[WISH] Message generated: ${message.slice(0,50)}...`);
+  console.log(`[WISH] Message: ${message.slice(0,60)}...`);
   const [emailResult, waResult] = await Promise.all([
     sendEmail(emp, message),
     sendWhatsApp(emp, message)
@@ -166,13 +171,11 @@ cron.schedule('0 15 * * *', async () => {
 });
 
 app.get('/api/employees', (req, res) => res.json(readJSON(DATA_FILE, [])));
-
 app.get('/api/employees/:id', (req, res) => {
   const emp = readJSON(DATA_FILE, []).find(e => String(e.id) === req.params.id);
   if (!emp) return res.status(404).json({ error: 'Not found' });
   res.json(emp);
 });
-
 app.post('/api/employees', (req, res) => {
   const employees = readJSON(DATA_FILE, []);
   const emp = { id: Date.now(), ...req.body, lastWished: null, addedOn: new Date().toISOString() };
@@ -180,7 +183,6 @@ app.post('/api/employees', (req, res) => {
   writeJSON(DATA_FILE, employees);
   res.json(emp);
 });
-
 app.put('/api/employees/:id', (req, res) => {
   const employees = readJSON(DATA_FILE, []);
   const idx = employees.findIndex(e => String(e.id) === req.params.id);
@@ -189,13 +191,11 @@ app.put('/api/employees/:id', (req, res) => {
   writeJSON(DATA_FILE, employees);
   res.json(employees[idx]);
 });
-
 app.delete('/api/employees/:id', (req, res) => {
   let employees = readJSON(DATA_FILE, []).filter(e => String(e.id) !== req.params.id);
   writeJSON(DATA_FILE, employees);
   res.json({ ok: true });
 });
-
 app.post('/api/import', upload.single('file'), (req, res) => {
   try {
     const wb = XLSX.readFile(req.file.path);
@@ -222,9 +222,7 @@ app.post('/api/import', upload.single('file'), (req, res) => {
     res.json({ added: added.length, employees });
   } catch (e) { res.status(400).json({ error: 'Could not parse file: ' + e.message }); }
 });
-
 app.get('/api/wishlog', (req, res) => res.json(readJSON(LOG_FILE, [])));
-
 app.post('/api/trigger', async (req, res) => {
   console.log('[TRIGGER] Manual trigger fired');
   const employees = readJSON(DATA_FILE, []);
@@ -237,10 +235,8 @@ app.post('/api/trigger', async (req, res) => {
   }
   res.json({ triggered: birthdays.length, results });
 });
-
 app.post('/api/poster', (req, res) => { writeJSON(POSTER_FILE, req.body); res.json({ ok: true }); });
 app.get('/api/poster', (req, res) => res.json(readJSON(POSTER_FILE, { name: 'Navy Classic', bg: '#0d2b5c', color: '#e8c96a' })));
-
 app.get('/api/stats', (req, res) => {
   const employees = readJSON(DATA_FILE, []);
   const log = readJSON(LOG_FILE, []);
