@@ -183,7 +183,11 @@ cron.schedule('0 15 * * *', async () => {
 });
 
 app.get('/health', (req, res) => res.send('OK'));
-
+app.get('/api/debug-time', (req, res) => {
+  const utc = new Date();
+  const cst = getCSTDate();
+  res.json({ utc: utc.toString(), cst: cst.toString(), cstMonth: cst.getMonth()+1, cstDay: cst.getDate() });
+});
 app.get('/api/employees', (req, res) => res.json(readJSON(DATA_FILE, [])));
 
 app.get('/api/employees/:id', (req, res) => {
