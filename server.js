@@ -63,37 +63,49 @@ function fallbackWish(emp) {
 }
 
 async function sendEmail(emp, message) {
-  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) return { ok: false, reason: 'SMTP not configured' };
-  const poster = readJSON(POSTER_FILE, { name: 'Navy Classic', bg: '#0d2b5c', color: '#e8c96a' });
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: process.env.SMTP_SECURE === 'true',
-    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-  });
-  await transporter.sendMail({
-    from: `"Simpalm Staffing Services" <${process.env.SMTP_USER}>`,
-    to: emp.email,
-    subject: `Happy Birthday, ${emp.first}!`,
-    html: `<div style="font-family:sans-serif;max-width:500px;margin:auto;background:#f8f9fc;padding:32px;border-radius:12px;">
-      <div style="background:#0d2b5c;border-radius:10px;padding:18px 22px;margin-bottom:20px;">
-        <div style="font-family:Georgia,serif;font-size:18px;color:#fff;">Simpalm Staffing Services</div>
-        <div style="font-size:10px;color:#e8c96a;letter-spacing:1.5px;margin-top:3px;">BIRTHDAY HUB</div>
-      </div>
-      <p style="font-size:15px;color:#0a1428;line-height:1.75;margin-bottom:24px;">${message.replace(/\n/g,'<br/>')}</p>
-      <div style="background:${poster.bg};border-radius:10px;padding:28px;text-align:center;">
-        <div style="font-size:26px;">🎂</div>
-        <div style="font-family:Georgia,serif;font-size:20px;color:${poster.color};margin-top:8px;">Happy Birthday, ${emp.first}!</div>
-        <div style="font-size:12px;color:${poster.color};opacity:0.7;margin-top:6px;">From the Simpalm Staffing Team</div>
-      </div>
-      <div style="margin-top:20px;font-size:11px;color:#6b7a99;text-align:center;">simpalmstaffing.com</div>
-    </div>`
-  });
-  return { ok: true };
+  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    console.log('[EMAIL] Skipped — SMTP_USER or SMTP_PASS not set');
+    return { ok: false, reason: 'SMTP not configured' };
+  }
+  try {
+    const poster = readJSON(POSTER_FILE, { name: 'Navy Classic', bg: '#0d2b5c', color: '#e8c96a' });
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS.replace(/\s/g, '')
+      }
+    });
+    await transporter.sendMail({
+      from: `"Simpalm Staffing Services" <${process.env.SMTP_USER}>`,
+      to: emp.email,
+      subject: `Happy Birthday, ${emp.first}!`,
+      html: `<div style="font-family:sans-serif;max-width:500px;margin:auto;background:#f8f9fc;padding:32px;border-radius:12px;">
+        <div style="background:#0d2b5c;border-radius:10px;padding:18px 22px;margin-bottom:20px;">
+          <div style="font-family:Georgia,serif;font-size:18px;color:#fff;">Simpalm Staffing Services</div>
+          <div style="font-size:10px;color:#e8c96a;letter-spacing:1.5px;margin-top:3px;">BIRTHDAY HUB</div>
+        </div>
+        <p style="font-size:15px;color:#0a1428;line-height:1.75;margin-bottom:24px;">${message.replace(/\n/g,'<br/>')}</p>
+        <div style="background:${poster.bg};border-radius:10px;padding:28px;text-align:center;">
+          <div style="font-size:26px;">🎂</div>
+          <div style="font-family:Georgia,serif;font-size:20px;color:${poster.color};margin-top:8px;">Happy Birthday, ${emp.first}!</div>
+          <div style="font-size:12px;color:${poster.color};opacity:0.7;margin-top:6px;">From the Simpalm Staffing Team</div>
+        </div>
+        <div style="margin-top:20px;font-size:11px;color:#6b7a99;text-align:center;">simpalmstaffing.com</div>
+      </div>`
+    });
+    console.log(`[EMAIL] Sent to ${emp.email}`);
+    return { ok: true };
+  } catch (e) {
+    console.error(`[EMAIL] Failed for ${emp.email}:`, e.message);
+    return { ok: false, reason: e.message };
+  }
 }
 
 async function sendWhatsApp(emp, message) {
-  if (!process.env.TWILIO_SID || !process.env.TWILIO_TOKEN || !emp.wa) return { ok: false, reason: 'WhatsApp not configured' };
+  if (!process.env.TWILIO_SID || !process.env.TWILIO_TOKEN || !emp.wa) {
+    return { ok: false, reason: 'WhatsApp not configured' };
+  }
   try {
     const auth = Buffer.from(`${process.env.TWILIO_SID}:${process.env.TWILIO_TOKEN}`).toString('base64');
     const body = new URLSearchParams({
@@ -112,7 +124,9 @@ async function sendWhatsApp(emp, message) {
 }
 
 async function sendBirthdayWish(emp) {
+  console.log(`[WISH] Processing ${emp.first} ${emp.last}...`);
   const message = await generateWish(emp);
+  console.log(`[WISH] Message generated: ${message.slice(0,50)}...`);
   const [emailResult, waResult] = await Promise.all([
     sendEmail(emp, message),
     sendWhatsApp(emp, message)
@@ -133,7 +147,10 @@ async function sendBirthdayWish(emp) {
   writeJSON(LOG_FILE, log.slice(0, 200));
   const employees = readJSON(DATA_FILE, []);
   const idx = employees.findIndex(e => String(e.id) === String(emp.id));
-  if (idx !== -1) { employees[idx].lastWished = new Date().getFullYear(); writeJSON(DATA_FILE, employees); }
+  if (idx !== -1) {
+    employees[idx].lastWished = new Date().getFullYear();
+    writeJSON(DATA_FILE, employees);
+  }
   return { emailResult, waResult, message };
 }
 
@@ -144,7 +161,7 @@ cron.schedule('0 15 * * *', async () => {
   console.log(`[CRON] Found ${todayBirthdays.length} birthday(s) today.`);
   for (const emp of todayBirthdays) {
     const result = await sendBirthdayWish(emp);
-    console.log(`[CRON] Wished ${emp.first} ${emp.last} — Email: ${result.emailResult.ok}, WA: ${result.waResult.ok}`);
+    console.log(`[CRON] ${emp.first} ${emp.last} — Email: ${result.emailResult.ok}, WA: ${result.waResult.ok}`);
   }
 });
 
@@ -209,12 +226,14 @@ app.post('/api/import', upload.single('file'), (req, res) => {
 app.get('/api/wishlog', (req, res) => res.json(readJSON(LOG_FILE, [])));
 
 app.post('/api/trigger', async (req, res) => {
+  console.log('[TRIGGER] Manual trigger fired');
   const employees = readJSON(DATA_FILE, []);
   const birthdays = employees.filter(e => isBirthdayToday(e.bday));
+  console.log(`[TRIGGER] Found ${birthdays.length} birthday(s) today`);
   const results = [];
   for (const emp of birthdays) {
     const result = await sendBirthdayWish(emp);
-    results.push({ name: `${emp.first} ${emp.last}`, ...result.emailResult });
+    results.push({ name: `${emp.first} ${emp.last}`, email: result.emailResult.ok, wa: result.waResult.ok });
   }
   res.json({ triggered: birthdays.length, results });
 });
