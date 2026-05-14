@@ -23,24 +23,29 @@ function writeJSON(file, data) {
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, JSON.stringify(data, null, 2));
 }
+
+function getCSTDate() {
+  return new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Chicago' }));
+}
+
 function isBirthdayToday(bday) {
   if (!bday) return false;
   const parts = bday.split('-');
   const month = parseInt(parts[1], 10);
   const day = parseInt(parts[2], 10);
-  const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Chicago' }));
+  const now = getCSTDate();
   return month === (now.getMonth() + 1) && day === now.getDate();
 }
-  const today = new Date();
-  const d = new Date(bday);
-  return d.getMonth() === today.getMonth() && d.getDate() === today.getDate();
-}
+
 function daysUntil(bday) {
-  const today = new Date();
-  const d = new Date(bday);
-  const next = new Date(today.getFullYear(), d.getMonth(), d.getDate());
-  if (next < today) next.setFullYear(today.getFullYear() + 1);
-  return Math.round((next - today) / 86400000);
+  if (!bday) return 999;
+  const now = getCSTDate();
+  const parts = bday.split('-');
+  const month = parseInt(parts[1], 10) - 1;
+  const day = parseInt(parts[2], 10);
+  const next = new Date(now.getFullYear(), month, day);
+  if (next < now) next.setFullYear(now.getFullYear() + 1);
+  return Math.round((next - now) / 86400000);
 }
 
 async function generateWish(emp) {
@@ -102,7 +107,7 @@ async function sendEmail(emp, message) {
     });
     const data = await res.json();
     if (data.id) {
-      console.log(`[EMAIL] Sent to ${emp.email} — ID: ${data.id}`);
+      console.log(`[EMAIL] Sent successfully to ${emp.email} — ID: ${data.id}`);
       return { ok: true };
     } else {
       console.error(`[EMAIL] Failed:`, JSON.stringify(data));
@@ -151,7 +156,7 @@ async function sendBirthdayWish(emp) {
     name: `${emp.first} ${emp.last}`,
     role: emp.role,
     client: emp.client,
-    date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    date: getCSTDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
     channel: channels.length ? channels.join(' + ') : 'Logged only',
     status: channels.length ? 'Sent' : 'Pending',
     message
@@ -160,7 +165,7 @@ async function sendBirthdayWish(emp) {
   const employees = readJSON(DATA_FILE, []);
   const idx = employees.findIndex(e => String(e.id) === String(emp.id));
   if (idx !== -1) {
-    employees[idx].lastWished = new Date().getFullYear();
+    employees[idx].lastWished = getCSTDate().getFullYear();
     writeJSON(DATA_FILE, employees);
   }
   return { emailResult, waResult, message };
@@ -177,12 +182,16 @@ cron.schedule('0 15 * * *', async () => {
   }
 });
 
+app.get('/health', (req, res) => res.send('OK'));
+
 app.get('/api/employees', (req, res) => res.json(readJSON(DATA_FILE, [])));
+
 app.get('/api/employees/:id', (req, res) => {
   const emp = readJSON(DATA_FILE, []).find(e => String(e.id) === req.params.id);
   if (!emp) return res.status(404).json({ error: 'Not found' });
   res.json(emp);
 });
+
 app.post('/api/employees', (req, res) => {
   const employees = readJSON(DATA_FILE, []);
   const emp = { id: Date.now(), ...req.body, lastWished: null, addedOn: new Date().toISOString() };
@@ -190,6 +199,7 @@ app.post('/api/employees', (req, res) => {
   writeJSON(DATA_FILE, employees);
   res.json(emp);
 });
+
 app.put('/api/employees/:id', (req, res) => {
   const employees = readJSON(DATA_FILE, []);
   const idx = employees.findIndex(e => String(e.id) === req.params.id);
@@ -198,11 +208,13 @@ app.put('/api/employees/:id', (req, res) => {
   writeJSON(DATA_FILE, employees);
   res.json(employees[idx]);
 });
+
 app.delete('/api/employees/:id', (req, res) => {
   let employees = readJSON(DATA_FILE, []).filter(e => String(e.id) !== req.params.id);
   writeJSON(DATA_FILE, employees);
   res.json({ ok: true });
 });
+
 app.post('/api/import', upload.single('file'), (req, res) => {
   try {
     const wb = XLSX.readFile(req.file.path);
@@ -229,12 +241,14 @@ app.post('/api/import', upload.single('file'), (req, res) => {
     res.json({ added: added.length, employees });
   } catch (e) { res.status(400).json({ error: 'Could not parse file: ' + e.message }); }
 });
+
 app.get('/api/wishlog', (req, res) => res.json(readJSON(LOG_FILE, [])));
+
 app.post('/api/trigger', async (req, res) => {
   console.log('[TRIGGER] Manual trigger fired');
   const employees = readJSON(DATA_FILE, []);
   const birthdays = employees.filter(e => isBirthdayToday(e.bday));
-  console.log(`[TRIGGER] Found ${birthdays.length} birthday(s) today`);
+  console.log(`[TRIGGER] Found ${birthdays.length} birthday(s) today in CST`);
   const results = [];
   for (const emp of birthdays) {
     const result = await sendBirthdayWish(emp);
@@ -242,20 +256,27 @@ app.post('/api/trigger', async (req, res) => {
   }
   res.json({ triggered: birthdays.length, results });
 });
+
 app.post('/api/poster', (req, res) => { writeJSON(POSTER_FILE, req.body); res.json({ ok: true }); });
 app.get('/api/poster', (req, res) => res.json(readJSON(POSTER_FILE, { name: 'Navy Classic', bg: '#0d2b5c', color: '#e8c96a' })));
+
 app.get('/api/stats', (req, res) => {
   const employees = readJSON(DATA_FILE, []);
   const log = readJSON(LOG_FILE, []);
+  const today = employees.filter(e => isBirthdayToday(e.bday));
+  const upcoming = employees
+    .filter(e => !isBirthdayToday(e.bday))
+    .sort((a, b) => daysUntil(a.bday) - daysUntil(b.bday))
+    .slice(0, 10);
   res.json({
     total: employees.length,
-    todayCount: employees.filter(e => isBirthdayToday(e.bday)).length,
+    todayCount: today.length,
     weekCount: employees.filter(e => { const d = daysUntil(e.bday); return d >= 0 && d <= 7; }).length,
     sentCount: log.filter(l => l.status === 'Sent').length,
-    today: employees.filter(e => isBirthdayToday(e.bday)),
-    upcoming: employees.filter(e => !isBirthdayToday(e.bday)).sort((a, b) => daysUntil(a.bday) - daysUntil(b.bday)).slice(0, 10)
+    today,
+    upcoming
   });
 });
-app.get('/health', (req, res) => res.send('OK'));
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Birthday Hub running on http://localhost:${PORT}`));
