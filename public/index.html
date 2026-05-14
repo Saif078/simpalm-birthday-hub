@@ -142,7 +142,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--navy
         <div class="hero-title">&#127881; Today's Birthdays</div>
         <div class="hero-sub">Auto-detected from employee DOB — no manual action needed</div>
       </div>
-      <div class="auto-on">Auto ON — 9:00 AM CST</div>
+      <div style="display:flex;align-items:center;gap:8px;"><div class="auto-on">Auto ON — 9:00 AM CST</div><button onclick="testTrigger()" style="background:var(--gold);color:var(--navy-dark);border:none;border-radius:20px;padding:5px 14px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;cursor:pointer;">Test Send Now</button></div>
     </div>
     <div id="today-list"></div>
   </div>
@@ -257,7 +257,7 @@ let toastTimer;
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3500);}
 function buildBottomNav(){const nav=document.createElement('div');nav.style.cssText='position:fixed;bottom:0;left:0;right:0;background:var(--navy);display:flex;height:52px;z-index:100;';[['&#9776; Dashboard','dashboard'],['&#128101; Employees','employees'],['&#43; Add','add']].forEach(([label,page])=>{const b=document.createElement('button');b.innerHTML=label;b.style.cssText='flex:1;background:none;border:none;color:rgba(255,255,255,0.7);font-family:DM Sans,sans-serif;font-size:12px;cursor:pointer;';b.onclick=()=>showPage(page);nav.appendChild(b);});document.body.appendChild(nav);}
 document.getElementById('nav-date').textContent=new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
-buildBottomNav();
+async function testTrigger(){if(!confirm('Send wishes to all employees with birthday TODAY?'))return;toast('Sending wishes...');const res=await fetch('/api/trigger',{method:'POST'});const data=await res.json();if(data.triggered===0){toast('No birthdays today. Add a test employee with todays date!');}else{toast('Sent '+data.triggered+' wish(es) successfully!');loadDashboard();}} buildBottomNav();
 loadDashboard();
 </script>
 </body>
