@@ -27,17 +27,21 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--navy
 .nav-pill{background:var(--gold);color:var(--navy-dark);font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px;}
 .page{display:none;max-width:860px;margin:0 auto;padding:28px 20px 60px;}
 .page.active{display:block;}
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--navy);color:#fff;font-size:13px;padding:10px 20px;border-radius:8px;border-left:3px solid var(--gold);z-index:999;opacity:0;transition:all 0.3s;pointer-events:none;white-space:nowrap;}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--navy);color:#fff;font-size:13px;padding:10px 20px;border-radius:8px;border-left:3px solid var(--gold);z-index:999;opacity:0;transition:all 0.3s;pointer-events:none;white-space:nowrap;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 .hero{background:var(--navy);border-radius:var(--r);padding:28px;margin-bottom:22px;position:relative;overflow:hidden;}
 .hero::before{content:'';position:absolute;right:-40px;top:-40px;width:200px;height:200px;border-radius:50%;background:rgba(201,168,76,0.08);}
 .hero::after{content:'';position:absolute;right:30px;bottom:-60px;width:140px;height:140px;border-radius:50%;background:rgba(201,168,76,0.05);}
-.hero-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;}
+.hero-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:10px;flex-wrap:wrap;}
 .hero-title{font-family:'Playfair Display',serif;font-size:22px;color:#fff;margin-bottom:4px;}
 .hero-sub{font-size:13px;color:rgba(255,255,255,0.5);}
-.auto-on{background:#1D9E75;color:#fff;font-size:11px;font-weight:500;padding:5px 14px;border-radius:20px;display:flex;align-items:center;gap:5px;}
+.hero-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.auto-on{background:#1D9E75;color:#fff;font-size:11px;font-weight:500;padding:5px 14px;border-radius:20px;display:flex;align-items:center;gap:5px;white-space:nowrap;}
 .auto-on::before{content:'';width:7px;height:7px;border-radius:50%;background:#fff;display:inline-block;animation:pulse 1.5s infinite;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.test-btn{background:var(--gold);color:var(--navy-dark);border:none;border-radius:20px;padding:5px 16px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;}
+.test-btn:hover{background:var(--gold-light);}
+.test-btn:disabled{opacity:0.6;cursor:not-allowed;}
 .no-bday{text-align:center;padding:24px;color:rgba(255,255,255,0.4);font-size:13px;}
 .bday-card{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:background 0.2s;}
 .bday-card:hover{background:rgba(255,255,255,0.12);}
@@ -88,7 +92,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--navy
 .back-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--navy-mid);cursor:pointer;margin-bottom:20px;}
 .back-btn:hover{color:var(--navy);}
 .emp-profile{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:28px;margin-bottom:20px;}
-.emp-profile-top{display:flex;align-items:center;gap:18px;margin-bottom:22px;padding-bottom:22px;border-bottom:1px solid var(--border);}
+.emp-profile-top{display:flex;align-items:center;gap:18px;margin-bottom:22px;padding-bottom:22px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
 .emp-av-lg{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:600;color:var(--gold-light);}
 .emp-profile-name{font-family:'Playfair Display',serif;font-size:22px;color:var(--navy);}
 .emp-profile-sub{font-size:13px;color:var(--muted);margin-top:3px;}
@@ -124,6 +128,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--navy
 </style>
 </head>
 <body>
+
 <nav class="nav">
   <div class="nav-left">
     <div class="nav-logo">SS</div>
@@ -134,29 +139,37 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--navy
     <span class="nav-pill" id="nav-pill">Loading...</span>
   </div>
 </nav>
+
 <div class="toast" id="toast"></div>
+
 <div class="page active" id="page-dashboard">
   <div class="hero">
     <div class="hero-top">
       <div>
         <div class="hero-title">&#127881; Today's Birthdays</div>
-        <div class="hero-sub">Auto-detected from employee DOB — no manual action needed</div>
+        <div class="hero-sub">Auto-detected from DOB — sends at 9:00 AM CST daily</div>
       </div>
-      <div style="display:flex;align-items:center;gap:8px;"><div class="auto-on">Auto ON — 9:00 AM CST</div><button onclick="testTrigger()" style="background:var(--gold);color:var(--navy-dark);border:none;border-radius:20px;padding:5px 14px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;cursor:pointer;">Test Send Now</button></div>
+      <div class="hero-right">
+        <div class="auto-on">Auto ON — 9:00 AM CST</div>
+        <button class="test-btn" id="test-btn" onclick="testTrigger()">&#9654; Test Send Now</button>
+      </div>
     </div>
     <div id="today-list"></div>
   </div>
+
   <div class="stats">
     <div class="stat"><div class="stat-num" id="s-total">0</div><div class="stat-label">Employees</div></div>
     <div class="stat"><div class="stat-num" id="s-today">0</div><div class="stat-label">Today</div></div>
     <div class="stat"><div class="stat-num" id="s-week">0</div><div class="stat-label">This week</div></div>
     <div class="stat"><div class="stat-num" id="s-sent">0</div><div class="stat-label">Wishes sent</div></div>
   </div>
+
   <div class="sec">
     <div class="sec-title">Upcoming birthdays</div>
     <span class="sec-link" onclick="showPage('employees')">View all employees →</span>
   </div>
   <div class="upcoming" id="upcoming-list"></div>
+
   <div class="sec"><div class="sec-title">Recent wish log</div></div>
   <div class="log-card">
     <table class="log-table">
@@ -165,36 +178,39 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--navy
     </table>
   </div>
 </div>
+
 <div class="page" id="page-employees">
   <div class="sec" style="margin-bottom:20px;">
     <div class="sec-title">All Employees</div>
     <button class="btn-gold" onclick="showPage('add')">+ Add Employee</button>
   </div>
   <div style="margin-bottom:16px;">
-    <input class="finput" id="search-input" placeholder="Search by name, role or client..." oninput="filterEmployees()" style="max-width:340px;" />
+    <input class="finput" id="search-input" placeholder="Search by name, role or client..." oninput="filterEmployees()" style="max-width:340px;"/>
   </div>
   <div id="all-employees-list"></div>
 </div>
+
 <div class="page" id="page-detail">
   <div class="back-btn" onclick="showPage('employees')">&#8592; Back to employees</div>
   <div id="detail-content"></div>
 </div>
+
 <div class="page" id="page-add">
   <div class="back-btn" onclick="showPage('employees')">&#8592; Back</div>
   <div class="form-card">
     <h3>Add New Employee</h3>
     <div class="form-grid">
-      <div class="fgroup"><label class="flabel">First name</label><input class="finput" id="a-first" placeholder="Sarah" /></div>
-      <div class="fgroup"><label class="flabel">Last name</label><input class="finput" id="a-last" placeholder="Johnson" /></div>
-      <div class="fgroup"><label class="flabel">Date of birth</label><input class="finput" id="a-bday" type="date" /></div>
-      <div class="fgroup"><label class="flabel">Role / Hat</label><input class="finput" id="a-role" placeholder="Virtual Assistant" /></div>
-      <div class="fgroup"><label class="flabel">Client</label><input class="finput" id="a-client" placeholder="Acme Corp" /></div>
-      <div class="fgroup"><label class="flabel">Email address</label><input class="finput" id="a-email" type="email" placeholder="sarah@email.com" /></div>
-      <div class="fgroup full"><label class="flabel">WhatsApp number (optional)</label><input class="finput" id="a-wa" placeholder="+1 312 555 0000" /></div>
+      <div class="fgroup"><label class="flabel">First name</label><input class="finput" id="a-first" placeholder="Sarah"/></div>
+      <div class="fgroup"><label class="flabel">Last name</label><input class="finput" id="a-last" placeholder="Johnson"/></div>
+      <div class="fgroup"><label class="flabel">Date of birth</label><input class="finput" id="a-bday" type="date"/></div>
+      <div class="fgroup"><label class="flabel">Role / Hat</label><input class="finput" id="a-role" placeholder="Virtual Assistant"/></div>
+      <div class="fgroup"><label class="flabel">Client</label><input class="finput" id="a-client" placeholder="Acme Corp"/></div>
+      <div class="fgroup"><label class="flabel">Email address</label><input class="finput" id="a-email" type="email" placeholder="sarah@email.com"/></div>
+      <div class="fgroup full"><label class="flabel">WhatsApp number (optional)</label><input class="finput" id="a-wa" placeholder="+1 312 555 0000"/></div>
     </div>
     <button class="btn-primary" onclick="addEmployee()">Save Employee</button>
     <button class="btn-secondary" onclick="document.getElementById('xl-input').click()">&#128229; Import from Excel / CSV</button>
-    <input type="file" id="xl-input" accept=".csv,.xlsx,.xls" style="display:none" onchange="importXL(event)" />
+    <input type="file" id="xl-input" accept=".csv,.xlsx,.xls" style="display:none" onchange="importXL(event)"/>
     <div style="margin-top:12px;font-size:12px;color:var(--muted);">Excel columns: <strong>First Name, Last Name, Birthday, Role, Client, Email, WhatsApp</strong></div>
   </div>
   <div class="poster-section">
@@ -204,9 +220,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--navy
       <div style="font-size:22px;color:var(--gold);">&#8679;</div>
       <p>Upload your own poster image (PNG, JPG)</p>
     </div>
-    <input type="file" id="p-input" accept="image/*" style="display:none" onchange="uploadPoster(event)" />
+    <input type="file" id="p-input" accept="image/*" style="display:none" onchange="uploadPoster(event)"/>
   </div>
 </div>
+
 <script>
 let allEmployees=[],wishLog=[],selectedPoster=0;
 const POSTERS=[
@@ -218,13 +235,34 @@ const POSTERS=[
   {name:'Coral fiesta',bg:'#993C1D',color:'#FAECE7'},
 ];
 const AV_COLORS=['#0d2b5c','#1e4180','#0F6E56','#BA7517','#D85A30','#534AB7'];
+
 function initials(e){return((e.first||'')[0]||'').toUpperCase()+((e.last||'')[0]||'').toUpperCase();}
 function avColor(e){return AV_COLORS[String(e.id).charCodeAt(0)%AV_COLORS.length];}
 function daysUntil(b){const today=new Date(),d=new Date(b),next=new Date(today.getFullYear(),d.getMonth(),d.getDate());if(next<today)next.setFullYear(today.getFullYear()+1);return Math.round((next-today)/86400000);}
 function isToday(b){const today=new Date(),d=new Date(b);return d.getMonth()===today.getMonth()&&d.getDate()===today.getDate();}
 function fmtDate(b){if(!b)return'—';return new Date(b+'T00:00').toLocaleDateString('en-US',{month:'long',day:'numeric'});}
-function showPage(name){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+name).classList.add('active');window.scrollTo(0,0);if(name==='dashboard')loadDashboard();if(name==='employees')renderAllEmployees();if(name==='add')renderPosters();}
-async function loadDashboard(){try{const[stats,log]=await Promise.all([fetch('/api/stats').then(r=>r.json()),fetch('/api/wishlog').then(r=>r.json())]);allEmployees=(await fetch('/api/employees').then(r=>r.json()))||[];wishLog=log||[];renderDashboard(stats,log);}catch(e){console.error(e);}}
+
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  window.scrollTo(0,0);
+  if(name==='dashboard')loadDashboard();
+  if(name==='employees')renderAllEmployees();
+  if(name==='add')renderPosters();
+}
+
+async function loadDashboard(){
+  try{
+    const[stats,log]=await Promise.all([
+      fetch('/api/stats').then(r=>r.json()),
+      fetch('/api/wishlog').then(r=>r.json())
+    ]);
+    allEmployees=(await fetch('/api/employees').then(r=>r.json()))||[];
+    wishLog=log||[];
+    renderDashboard(stats,log);
+  }catch(e){console.error(e);}
+}
+
 function renderDashboard(stats,log){
   document.getElementById('nav-pill').textContent=stats.todayCount?stats.todayCount+(stats.todayCount===1?' Birthday Today':' Birthdays Today'):'No Birthdays Today';
   document.getElementById('s-total').textContent=stats.total;
@@ -232,32 +270,271 @@ function renderDashboard(stats,log){
   document.getElementById('s-week').textContent=stats.weekCount;
   document.getElementById('s-sent').textContent=stats.sentCount;
   const todayEl=document.getElementById('today-list');
-  if(!stats.today||!stats.today.length){todayEl.innerHTML='<div class="no-bday">No birthdays today. Auto-wisher is standing by.</div>';}
-  else{todayEl.innerHTML=stats.today.map(e=>`<div class="bday-card" onclick="openEmployee('${e.id}')"><div class="av av-lg" style="background:${avColor(e)}">${initials(e)}</div><div class="bday-info"><div class="bday-name">${e.first} ${e.last}</div><div class="bday-meta">${e.role} &mdash; ${e.client} &mdash; ${e.email}</div></div><span class="${e.lastWished===new Date().getFullYear()?'sent-pill':'pending-pill'}">${e.lastWished===new Date().getFullYear()?'Wish Sent':'Auto-sending at 9 AM CST'}</span></div>`).join('');}
+  if(!stats.today||!stats.today.length){
+    todayEl.innerHTML='<div class="no-bday">No birthdays today. Auto-wisher is standing by.</div>';
+  }else{
+    todayEl.innerHTML=stats.today.map(e=>`
+      <div class="bday-card" onclick="openEmployee('${e.id}')">
+        <div class="av av-lg" style="background:${avColor(e)}">${initials(e)}</div>
+        <div class="bday-info">
+          <div class="bday-name">${e.first} ${e.last}</div>
+          <div class="bday-meta">${e.role} &mdash; ${e.client} &mdash; ${e.email}</div>
+        </div>
+        <span class="${e.lastWished===new Date().getFullYear()?'sent-pill':'pending-pill'}">
+          ${e.lastWished===new Date().getFullYear()?'Wish Sent':'Pending — 9 AM CST'}
+        </span>
+      </div>`).join('');
+  }
   const upcomingEl=document.getElementById('upcoming-list');
-  if(!stats.upcoming||!stats.upcoming.length){upcomingEl.innerHTML='<div class="empty">No upcoming birthdays found.</div>';}
-  else{upcomingEl.innerHTML=stats.upcoming.map(e=>{const d=daysUntil(e.bday),pillCls=d<=3?'pill-soon':d<=7?'pill-week':'pill-later',pillLbl=d===1?'Tomorrow':d+' days';return`<div class="emp-row" onclick="openEmployee('${e.id}')"><div class="av av-sm" style="background:${avColor(e)}">${initials(e)}</div><div class="emp-info"><div class="emp-name">${e.first} ${e.last}</div><div class="emp-sub">${e.role} &mdash; ${e.client}</div></div><span style="font-size:12px;color:var(--muted);">${fmtDate(e.bday)}</span><span class="pill ${pillCls}">${pillLbl}</span></div>`;}).join('');}
+  if(!stats.upcoming||!stats.upcoming.length){
+    upcomingEl.innerHTML='<div class="empty">No upcoming birthdays found.</div>';
+  }else{
+    upcomingEl.innerHTML=stats.upcoming.map(e=>{
+      const d=daysUntil(e.bday),pillCls=d<=3?'pill-soon':d<=7?'pill-week':'pill-later',pillLbl=d===1?'Tomorrow':d+' days';
+      return`<div class="emp-row" onclick="openEmployee('${e.id}')">
+        <div class="av av-sm" style="background:${avColor(e)}">${initials(e)}</div>
+        <div class="emp-info"><div class="emp-name">${e.first} ${e.last}</div><div class="emp-sub">${e.role} &mdash; ${e.client}</div></div>
+        <span style="font-size:12px;color:var(--muted);">${fmtDate(e.bday)}</span>
+        <span class="pill ${pillCls}">${pillLbl}</span>
+      </div>`;
+    }).join('');
+  }
   const logEl=document.getElementById('log-body');
-  if(!log||!log.length){logEl.innerHTML='<tr><td colspan="5" class="empty">No wishes sent yet. Auto-wisher fires daily at 9:00 AM CST.</td></tr>';}
-  else{logEl.innerHTML=log.slice(0,10).map(l=>`<tr><td><strong>${l.name}</strong></td><td style="color:var(--muted);">${l.role||''}</td><td style="color:var(--muted);">${l.date}</td><td>${l.channel}</td><td><span class="pill ${l.status==='Sent'?'pill-soon':'pill-later'}">${l.status}</span></td></tr>`).join('');}
+  if(!log||!log.length){
+    logEl.innerHTML='<tr><td colspan="5" class="empty">No wishes sent yet. Auto-wisher fires daily at 9:00 AM CST.</td></tr>';
+  }else{
+    logEl.innerHTML=log.slice(0,10).map(l=>`
+      <tr>
+        <td><strong>${l.name}</strong></td>
+        <td style="color:var(--muted);">${l.role||''}</td>
+        <td style="color:var(--muted);">${l.date}</td>
+        <td>${l.channel}</td>
+        <td><span class="pill ${l.status==='Sent'?'pill-soon':'pill-later'}">${l.status}</span></td>
+      </tr>`).join('');
+  }
 }
-async function renderAllEmployees(){if(!allEmployees.length)allEmployees=await fetch('/api/employees').then(r=>r.json());filterEmployees();}
-function filterEmployees(){const q=(document.getElementById('search-input')?.value||'').toLowerCase(),filtered=allEmployees.filter(e=>`${e.first} ${e.last} ${e.role} ${e.client}`.toLowerCase().includes(q)),el=document.getElementById('all-employees-list');if(!filtered.length){el.innerHTML='<div class="empty">No employees found.</div>';return;}el.innerHTML=filtered.sort((a,b)=>daysUntil(a.bday)-daysUntil(b.bday)).map(e=>{const d=daysUntil(e.bday),pillCls=isToday(e.bday)?'sent-pill':d<=3?'pill-soon':d<=7?'pill-week':'pill-later',pillLbl=isToday(e.bday)?'Today':d===1?'Tomorrow':d+' days';return`<div class="emp-row" style="margin-bottom:8px;" onclick="openEmployee('${e.id}')"><div class="av av-sm" style="background:${avColor(e)}">${initials(e)}</div><div class="emp-info"><div class="emp-name">${e.first} ${e.last}</div><div class="emp-sub">${e.role} &mdash; ${e.client}</div></div><span style="font-size:12px;color:var(--muted);">${fmtDate(e.bday)}</span><span class="pill ${pillCls}">${pillLbl}</span></div>`;}).join('');}
-async function openEmployee(id){const emp=await fetch('/api/employees/'+id).then(r=>r.json()),log=(await fetch('/api/wishlog').then(r=>r.json())).filter(l=>l.name===`${emp.first} ${emp.last}`);renderDetail(emp,log);showPage('detail');}
-function renderDetail(emp,log){const d=daysUntil(emp.bday),dLabel=isToday(emp.bday)?'Today!':d===1?'Tomorrow':d+' days away';document.getElementById('detail-content').innerHTML=`<div class="emp-profile"><div class="emp-profile-top"><div class="emp-av-lg" style="background:${avColor(emp)}">${initials(emp)}</div><div><div class="emp-profile-name">${emp.first} ${emp.last}</div><div class="emp-profile-sub">${emp.role} &mdash; ${emp.client}</div></div><div style="margin-left:auto;display:flex;gap:8px;"><button class="btn-gold btn-sm" onclick="toggleEdit('${emp.id}')">Edit</button><button class="btn-danger btn-sm" onclick="deleteEmp('${emp.id}')">Remove</button></div></div><div class="profile-grid"><div class="profile-field"><div class="profile-field-label">Birthday</div><div class="profile-field-value">${fmtDate(emp.bday)}</div></div><div class="profile-field"><div class="profile-field-label">Days until birthday</div><div class="profile-field-value">${dLabel}</div></div><div class="profile-field"><div class="profile-field-label">Email</div><div class="profile-field-value">${emp.email||'—'}</div></div><div class="profile-field"><div class="profile-field-label">WhatsApp</div><div class="profile-field-value">${emp.wa||'Not set'}</div></div><div class="profile-field"><div class="profile-field-label">Client</div><div class="profile-field-value">${emp.client}</div></div><div class="profile-field"><div class="profile-field-label">Last wish sent</div><div class="profile-field-value">${emp.lastWished?emp.lastWished+' (auto-sent)':'Not yet'}</div></div></div><div class="edit-form" id="edit-form-${emp.id}"><div style="border-top:1px solid var(--border);margin-top:20px;padding-top:20px;"><div class="form-grid"><div class="fgroup"><label class="flabel">First name</label><input class="finput" id="e-first" value="${emp.first}" /></div><div class="fgroup"><label class="flabel">Last name</label><input class="finput" id="e-last" value="${emp.last}" /></div><div class="fgroup"><label class="flabel">Birthday</label><input class="finput" id="e-bday" type="date" value="${emp.bday}" /></div><div class="fgroup"><label class="flabel">Role</label><input class="finput" id="e-role" value="${emp.role}" /></div><div class="fgroup"><label class="flabel">Client</label><input class="finput" id="e-client" value="${emp.client}" /></div><div class="fgroup"><label class="flabel">Email</label><input class="finput" id="e-email" type="email" value="${emp.email||''}" /></div><div class="fgroup full"><label class="flabel">WhatsApp</label><input class="finput" id="e-wa" value="${emp.wa||''}" /></div></div><button class="btn-primary" onclick="saveEdit('${emp.id}')">Save Changes</button></div></div></div><div class="sec"><div class="sec-title">Wish history</div></div><div class="log-card"><table class="log-table"><thead><tr><th>Date</th><th>Channel</th><th>Status</th><th>Message preview</th></tr></thead><tbody>${log.length?log.map(l=>`<tr><td>${l.date}</td><td>${l.channel}</td><td><span class="pill ${l.status==='Sent'?'pill-soon':'pill-later'}">${l.status}</span></td><td style="color:var(--muted);font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${l.message||'—'}</td></tr>`).join(''):'<tr><td colspan="4" class="empty">No wishes sent to this employee yet.</td></tr>'}</tbody></table></div>`;}
+
+async function testTrigger(){
+  const btn=document.getElementById('test-btn');
+  btn.disabled=true;
+  btn.textContent='Sending...';
+  toast('Contacting server...');
+  try{
+    const res=await fetch('/api/trigger',{method:'POST'});
+    const data=await res.json();
+    if(data.triggered===0){
+      toast('No birthdays today. Add a test employee with todays date!');
+    }else{
+      toast('Done! Sent '+data.triggered+' wish(es). Check the log below.');
+      await loadDashboard();
+    }
+  }catch(e){
+    toast('Error: '+e.message);
+  }
+  btn.disabled=false;
+  btn.innerHTML='&#9654; Test Send Now';
+}
+
+async function renderAllEmployees(){
+  if(!allEmployees.length)allEmployees=await fetch('/api/employees').then(r=>r.json());
+  filterEmployees();
+}
+
+function filterEmployees(){
+  const q=(document.getElementById('search-input')?.value||'').toLowerCase();
+  const filtered=allEmployees.filter(e=>`${e.first} ${e.last} ${e.role} ${e.client}`.toLowerCase().includes(q));
+  const el=document.getElementById('all-employees-list');
+  if(!filtered.length){el.innerHTML='<div class="empty">No employees found.</div>';return;}
+  el.innerHTML=filtered.sort((a,b)=>daysUntil(a.bday)-daysUntil(b.bday)).map(e=>{
+    const d=daysUntil(e.bday),pillCls=isToday(e.bday)?'sent-pill':d<=3?'pill-soon':d<=7?'pill-week':'pill-later',pillLbl=isToday(e.bday)?'Today':d===1?'Tomorrow':d+' days';
+    return`<div class="emp-row" style="margin-bottom:8px;" onclick="openEmployee('${e.id}')">
+      <div class="av av-sm" style="background:${avColor(e)}">${initials(e)}</div>
+      <div class="emp-info"><div class="emp-name">${e.first} ${e.last}</div><div class="emp-sub">${e.role} &mdash; ${e.client}</div></div>
+      <span style="font-size:12px;color:var(--muted);">${fmtDate(e.bday)}</span>
+      <span class="pill ${pillCls}">${pillLbl}</span>
+    </div>`;
+  }).join('');
+}
+
+async function openEmployee(id){
+  const emp=await fetch('/api/employees/'+id).then(r=>r.json());
+  const log=(await fetch('/api/wishlog').then(r=>r.json())).filter(l=>l.name===`${emp.first} ${emp.last}`);
+  renderDetail(emp,log);
+  showPage('detail');
+}
+
+function renderDetail(emp,log){
+  const d=daysUntil(emp.bday),dLabel=isToday(emp.bday)?'Today!':d===1?'Tomorrow':d+' days away';
+  document.getElementById('detail-content').innerHTML=`
+    <div class="emp-profile">
+      <div class="emp-profile-top">
+        <div class="emp-av-lg" style="background:${avColor(emp)}">${initials(emp)}</div>
+        <div>
+          <div class="emp-profile-name">${emp.first} ${emp.last}</div>
+          <div class="emp-profile-sub">${emp.role} &mdash; ${emp.client}</div>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:8px;">
+          <button class="btn-gold btn-sm" onclick="toggleEdit('${emp.id}')">Edit</button>
+          <button class="btn-danger btn-sm" onclick="deleteEmp('${emp.id}')">Remove</button>
+        </div>
+      </div>
+      <div class="profile-grid">
+        <div class="profile-field"><div class="profile-field-label">Birthday</div><div class="profile-field-value">${fmtDate(emp.bday)}</div></div>
+        <div class="profile-field"><div class="profile-field-label">Days until birthday</div><div class="profile-field-value">${dLabel}</div></div>
+        <div class="profile-field"><div class="profile-field-label">Email</div><div class="profile-field-value">${emp.email||'—'}</div></div>
+        <div class="profile-field"><div class="profile-field-label">WhatsApp</div><div class="profile-field-value">${emp.wa||'Not set'}</div></div>
+        <div class="profile-field"><div class="profile-field-label">Client</div><div class="profile-field-value">${emp.client}</div></div>
+        <div class="profile-field"><div class="profile-field-label">Last wish sent</div><div class="profile-field-value">${emp.lastWished?emp.lastWished+' (auto-sent)':'Not yet'}</div></div>
+      </div>
+      <div class="edit-form" id="edit-form-${emp.id}">
+        <div style="border-top:1px solid var(--border);margin-top:20px;padding-top:20px;">
+          <div class="form-grid">
+            <div class="fgroup"><label class="flabel">First name</label><input class="finput" id="e-first" value="${emp.first}"/></div>
+            <div class="fgroup"><label class="flabel">Last name</label><input class="finput" id="e-last" value="${emp.last}"/></div>
+            <div class="fgroup"><label class="flabel">Birthday</label><input class="finput" id="e-bday" type="date" value="${emp.bday}"/></div>
+            <div class="fgroup"><label class="flabel">Role</label><input class="finput" id="e-role" value="${emp.role}"/></div>
+            <div class="fgroup"><label class="flabel">Client</label><input class="finput" id="e-client" value="${emp.client}"/></div>
+            <div class="fgroup"><label class="flabel">Email</label><input class="finput" id="e-email" type="email" value="${emp.email||''}"/></div>
+            <div class="fgroup full"><label class="flabel">WhatsApp</label><input class="finput" id="e-wa" value="${emp.wa||''}"/></div>
+          </div>
+          <button class="btn-primary" onclick="saveEdit('${emp.id}')">Save Changes</button>
+        </div>
+      </div>
+    </div>
+    <div class="sec"><div class="sec-title">Wish history</div></div>
+    <div class="log-card">
+      <table class="log-table">
+        <thead><tr><th>Date</th><th>Channel</th><th>Status</th><th>Message preview</th></tr></thead>
+        <tbody>${log.length?log.map(l=>`
+          <tr>
+            <td>${l.date}</td>
+            <td>${l.channel}</td>
+            <td><span class="pill ${l.status==='Sent'?'pill-soon':'pill-later'}">${l.status}</span></td>
+            <td style="color:var(--muted);font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${l.message||'—'}</td>
+          </tr>`).join(''):'<tr><td colspan="4" class="empty">No wishes sent yet.</td></tr>'}
+        </tbody>
+      </table>
+    </div>`;
+}
+
 function toggleEdit(id){document.getElementById('edit-form-'+id).classList.toggle('open');}
-async function saveEdit(id){const body={first:document.getElementById('e-first').value.trim(),last:document.getElementById('e-last').value.trim(),bday:document.getElementById('e-bday').value,role:document.getElementById('e-role').value.trim(),client:document.getElementById('e-client').value.trim(),email:document.getElementById('e-email').value.trim(),wa:document.getElementById('e-wa').value.trim()};const emp=await fetch('/api/employees/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json());allEmployees=allEmployees.map(e=>String(e.id)===String(id)?emp:e);toast('Changes saved!');const log=(await fetch('/api/wishlog').then(r=>r.json())).filter(l=>l.name===`${emp.first} ${emp.last}`);renderDetail(emp,log);}
-async function deleteEmp(id){if(!confirm('Remove this employee?'))return;await fetch('/api/employees/'+id,{method:'DELETE'});allEmployees=allEmployees.filter(e=>String(e.id)!==String(id));toast('Employee removed.');showPage('employees');}
-async function addEmployee(){const first=document.getElementById('a-first').value.trim(),last=document.getElementById('a-last').value.trim(),bday=document.getElementById('a-bday').value;if(!first||!last||!bday){toast('Please fill in name and birthday.');return;}const emp=await fetch('/api/employees',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({first,last,bday,role:document.getElementById('a-role').value||'Staff',client:document.getElementById('a-client').value||'General',email:document.getElementById('a-email').value,wa:document.getElementById('a-wa').value})}).then(r=>r.json());allEmployees.push(emp);['a-first','a-last','a-bday','a-role','a-client','a-email','a-wa'].forEach(id=>document.getElementById(id).value='');toast(`${first} ${last} added! Auto-wisher will send on their birthday.`);showPage('employees');}
-async function importXL(e){const f=e.target.files[0];if(!f)return;const fd=new FormData();fd.append('file',f);const data=await fetch('/api/import',{method:'POST',body:fd}).then(r=>r.json());if(data.error){toast('Error: '+data.error);return;}allEmployees=data.employees||allEmployees;toast('Imported '+data.added+' employee(s) successfully!');showPage('employees');}
-function renderPosters(){fetch('/api/poster').then(r=>r.json()).then(saved=>{const idx=POSTERS.findIndex(p=>p.name===saved.name);if(idx!==-1)selectedPoster=idx;document.getElementById('poster-grid').innerHTML=POSTERS.map((p,i)=>`<div class="poster ${selectedPoster===i?'active':''}" onclick="selectPoster(${i})"><div class="poster-swatch" style="background:${p.bg};color:${p.color};">Happy Birthday</div><div class="poster-name">${p.name}</div></div>`).join('');});}
-function selectPoster(i){selectedPoster=i;renderPosters();fetch('/api/poster',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(POSTERS[i])});toast('Poster "'+POSTERS[i].name+'" saved!');}
-function uploadPoster(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{POSTERS.push({name:'Custom poster',bg:'#888',color:'#fff',img:ev.target.result});selectedPoster=POSTERS.length-1;renderPosters();toast('Custom poster uploaded!');};r.readAsDataURL(f);}
+
+async function saveEdit(id){
+  const body={
+    first:document.getElementById('e-first').value.trim(),
+    last:document.getElementById('e-last').value.trim(),
+    bday:document.getElementById('e-bday').value,
+    role:document.getElementById('e-role').value.trim(),
+    client:document.getElementById('e-client').value.trim(),
+    email:document.getElementById('e-email').value.trim(),
+    wa:document.getElementById('e-wa').value.trim()
+  };
+  const emp=await fetch('/api/employees/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json());
+  allEmployees=allEmployees.map(e=>String(e.id)===String(id)?emp:e);
+  toast('Changes saved!');
+  const log=(await fetch('/api/wishlog').then(r=>r.json())).filter(l=>l.name===`${emp.first} ${emp.last}`);
+  renderDetail(emp,log);
+}
+
+async function deleteEmp(id){
+  if(!confirm('Remove this employee?'))return;
+  await fetch('/api/employees/'+id,{method:'DELETE'});
+  allEmployees=allEmployees.filter(e=>String(e.id)!==String(id));
+  toast('Employee removed.');
+  showPage('employees');
+}
+
+async function addEmployee(){
+  const first=document.getElementById('a-first').value.trim();
+  const last=document.getElementById('a-last').value.trim();
+  const bday=document.getElementById('a-bday').value;
+  if(!first||!last||!bday){toast('Please fill in name and birthday.');return;}
+  const emp=await fetch('/api/employees',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      first,last,bday,
+      role:document.getElementById('a-role').value||'Staff',
+      client:document.getElementById('a-client').value||'General',
+      email:document.getElementById('a-email').value,
+      wa:document.getElementById('a-wa').value
+    })
+  }).then(r=>r.json());
+  allEmployees.push(emp);
+  ['a-first','a-last','a-bday','a-role','a-client','a-email','a-wa'].forEach(id=>document.getElementById(id).value='');
+  toast(first+' '+last+' added! Auto-wisher will send on their birthday.');
+  showPage('employees');
+}
+
+async function importXL(e){
+  const f=e.target.files[0];if(!f)return;
+  const fd=new FormData();fd.append('file',f);
+  const data=await fetch('/api/import',{method:'POST',body:fd}).then(r=>r.json());
+  if(data.error){toast('Error: '+data.error);return;}
+  allEmployees=data.employees||allEmployees;
+  toast('Imported '+data.added+' employee(s) successfully!');
+  showPage('employees');
+}
+
+function renderPosters(){
+  fetch('/api/poster').then(r=>r.json()).then(saved=>{
+    const idx=POSTERS.findIndex(p=>p.name===saved.name);
+    if(idx!==-1)selectedPoster=idx;
+    document.getElementById('poster-grid').innerHTML=POSTERS.map((p,i)=>`
+      <div class="poster ${selectedPoster===i?'active':''}" onclick="selectPoster(${i})">
+        <div class="poster-swatch" style="background:${p.bg};color:${p.color};">Happy Birthday</div>
+        <div class="poster-name">${p.name}</div>
+      </div>`).join('');
+  }).catch(()=>{
+    document.getElementById('poster-grid').innerHTML=POSTERS.map((p,i)=>`
+      <div class="poster ${selectedPoster===i?'active':''}" onclick="selectPoster(${i})">
+        <div class="poster-swatch" style="background:${p.bg};color:${p.color};">Happy Birthday</div>
+        <div class="poster-name">${p.name}</div>
+      </div>`).join('');
+  });
+}
+
+function selectPoster(i){
+  selectedPoster=i;
+  renderPosters();
+  fetch('/api/poster',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(POSTERS[i])});
+  toast('Poster "'+POSTERS[i].name+'" saved!');
+}
+
+function uploadPoster(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    POSTERS.push({name:'Custom poster',bg:'#888',color:'#fff',img:ev.target.result});
+    selectedPoster=POSTERS.length-1;
+    renderPosters();
+    toast('Custom poster uploaded!');
+  };
+  r.readAsDataURL(f);
+}
+
 let toastTimer;
-function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3500);}
-function buildBottomNav(){const nav=document.createElement('div');nav.style.cssText='position:fixed;bottom:0;left:0;right:0;background:var(--navy);display:flex;height:52px;z-index:100;';[['&#9776; Dashboard','dashboard'],['&#128101; Employees','employees'],['&#43; Add','add']].forEach(([label,page])=>{const b=document.createElement('button');b.innerHTML=label;b.style.cssText='flex:1;background:none;border:none;color:rgba(255,255,255,0.7);font-family:DM Sans,sans-serif;font-size:12px;cursor:pointer;';b.onclick=()=>showPage(page);nav.appendChild(b);});document.body.appendChild(nav);}
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.classList.remove('show'),3500);
+}
+
+function buildBottomNav(){
+  const nav=document.createElement('div');
+  nav.style.cssText='position:fixed;bottom:0;left:0;right:0;background:var(--navy);display:flex;height:52px;z-index:100;';
+  [['&#9776; Dashboard','dashboard'],['&#128101; Employees','employees'],['&#43; Add','add']].forEach(([label,page])=>{
+    const b=document.createElement('button');
+    b.innerHTML=label;
+    b.style.cssText='flex:1;background:none;border:none;color:rgba(255,255,255,0.7);font-family:DM Sans,sans-serif;font-size:12px;cursor:pointer;';
+    b.onclick=()=>showPage(page);
+    nav.appendChild(b);
+  });
+  document.body.appendChild(nav);
+}
+
 document.getElementById('nav-date').textContent=new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
-async function testTrigger(){if(!confirm('Send wishes to all employees with birthday TODAY?'))return;toast('Sending wishes...');const res=await fetch('/api/trigger',{method:'POST'});const data=await res.json();if(data.triggered===0){toast('No birthdays today. Add a test employee with todays date!');}else{toast('Sent '+data.triggered+' wish(es) successfully!');loadDashboard();}} buildBottomNav();
+buildBottomNav();
 loadDashboard();
 </script>
 </body>
