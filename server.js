@@ -24,6 +24,13 @@ function writeJSON(file, data) {
   fs.writeFileSync(file, JSON.stringify(data, null, 2));
 }
 function isBirthdayToday(bday) {
+  if (!bday) return false;
+  const parts = bday.split('-');
+  const month = parseInt(parts[1], 10);
+  const day = parseInt(parts[2], 10);
+  const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Chicago' }));
+  return month === (now.getMonth() + 1) && day === now.getDate();
+}
   const today = new Date();
   const d = new Date(bday);
   return d.getMonth() === today.getMonth() && d.getDate() === today.getDate();
